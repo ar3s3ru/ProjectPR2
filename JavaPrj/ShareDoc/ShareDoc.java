@@ -1,8 +1,8 @@
 /**
- *  ShareDoc.java
- *  Autore: Danilo Cianfrone, matricola 501292
- *  Il codice, in ogni sua parte, è opera originale dell'autore.
- */
+  *  ShareDoc.java
+  *  Autore: Danilo Cianfrone, matricola 501292
+  *  Il codice, in ogni sua parte, è opera originale dell'autore.
+  */
 public interface ShareDoc {
     // OVERVIEW: modulo Java che simula la gestione di un sistema di condivisione di
     //           documenti digitali.

@@ -1,29 +1,34 @@
 /**
- *  ShareDocImpl.java
- *  Autore: Danilo Cianfrone, matricola 501292
- *  Il codice, in ogni sua parte, è opera originale dell'autore.
- */
+  *  ShareDocImpl.java
+  *  Autore: Danilo Cianfrone, matricola 501292
+  *  Il codice, in ogni sua parte, è opera originale dell'autore.
+  */
 public class ShareDocImpl implements ShareDoc {
     private Vector<DigitalDoc> docs;
     private Queue<SharedDoc>   shares;
     private Set<User>          users;
 
+    // --------------------------------------------------------------------------- //
     public ShareDocImpl(String op_nick, int op_pass) 
         throws IllegalArgumentException {
-            // Se il nick del costruttore è null, solleva
-            // IllegalArgumentException.
-            if (op_nick == null)
-                throw new IllegalArgumentException("Nick operator is null");
+    // --------------------------------------------------------------------------- //
+        // Se il nick del costruttore è null, solleva
+        // IllegalArgumentException.
+        if (op_nick == null)
+            throw new IllegalArgumentException("Nick operator is null");
 
-            // Inizializza l'insieme degli utenti e aggiunge
-            // un nuovo utente operatore.
-            this.users = new HashSet<>();
-            this.users.add(new Operator(op_nick, op_pass));
-            // Inizializza la lista dei documenti.
-            this.docs = new Vector<>();
+        this.docs   = new Vector<>();
+        this.users  = new HashSet<>();
+        this.shares = new LinkedList<>();
+
+        // Aggiunge un operatore all'insieme degli utenti.
+        this.users.add(new Operator(op_nick, op_pass));
     }
 
+    // --------------------------------------------------------------------------- //
     public boolean addUser(String name, int password) {
+        // TODO: invariante di rappresentazione.
+    // --------------------------------------------------------------------------- //
         // Se name è uguale a null, non viene aggiunto nulla
         // all'insieme degli utenti, ritorna false.
         if (name == null)
@@ -36,7 +41,10 @@ public class ShareDocImpl implements ShareDoc {
         return this.users.add(new Client(name, password));
     }
 
+    // --------------------------------------------------------------------------- //
     public void removeUser(String name) {
+        // TODO: invariante di rappresentazione.
+    // --------------------------------------------------------------------------- //
         // Esegue la procedura solo se name è un oggetto valido.
         if (name != null) {
             // Iteratore sulla lista dei documenti.
@@ -61,7 +69,10 @@ public class ShareDocImpl implements ShareDoc {
         }
     }
 
+    // --------------------------------------------------------------------------- //
     public boolean addDoc(String user, String doc, int password) {
+        // TODO: invariante di rappresentazione.
+    // --------------------------------------------------------------------------- //
         // Se gli argomenti non sono validi, non avvengono modifiche
         // alla lista dei documenti.
         if (user == null || doc == null)
@@ -81,7 +92,10 @@ public class ShareDocImpl implements ShareDoc {
         return this.docs.add(new DigitalDoc(doc, user));
     }
 
+    // --------------------------------------------------------------------------- //
     public boolean removeDoc(String user, String doc, int password) {
+        // TODO: invariante di rappresentazione.
+    // --------------------------------------------------------------------------- //
         // Parametri attuali non validi, ritorna false.
         if (user == null || doc == null)
             return false;
@@ -98,13 +112,16 @@ public class ShareDocImpl implements ShareDoc {
         return this.docs.remove(new DigitalDoc(user, doc));
     }
 
+    // --------------------------------------------------------------------------- //
     public void readDoc(String user, String doc, int password)
         throws WrongIDException {
+        // TODO: invariante di rappresentazione
+    // --------------------------------------------------------------------------- //
         // Esegue la procedura solo nel caso di parametri validi.
         if (user != null && doc != null) {
             User usrCheck = new User(user, password);
 
-            if (!this.users.contains(toCheck))
+            if (!this.users.contains(usrCheck))
                 throw new WrongIDException("User not registered");
 
             for (User current : this.users) {
@@ -118,8 +135,11 @@ public class ShareDocImpl implements ShareDoc {
         }
     }
 
+    // --------------------------------------------------------------------------- //
     public void shareDoc(String fromName, String toName, String doc, int password) 
         throws WrongIDException {
+        // TODO: invariante di rappresentazione.
+    // --------------------------------------------------------------------------- //
         // Parametri attuali errati
         if (fromName != null && toName != null && doc != null) {
             // Oggetti temporanei per la ricerca.
@@ -171,8 +191,11 @@ public class ShareDocImpl implements ShareDoc {
         }
     }
 
+    // --------------------------------------------------------------------------- //
     public String getNext(String user, int password) 
         throws EmptQueueException, WrongIDException {
+        // TODO: invariante di rappresentazione.
+    // --------------------------------------------------------------------------- //
 
     }
 }

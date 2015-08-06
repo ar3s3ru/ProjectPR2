@@ -1,8 +1,8 @@
 /**
- *  User.java
- *  Autore: Danilo Cianfrone, matricola 501292
- *  Il codice, in ogni sua parte, è opera originale dell'autore.
- */
+  *  User.java
+  *  Autore: Danilo Cianfrone, matricola 501292
+  *  Il codice, in ogni sua parte, è opera originale dell'autore.
+  */
 public abstract class User {
     // OVERVIEW: classe che descrive un utente del sistema di condivisione
     //           di documenti digitali.
