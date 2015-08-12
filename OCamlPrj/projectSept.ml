@@ -9,8 +9,8 @@ type 't env = (string * 't) list
 
 (* Definizione del tipo tupla *)
 type tuple =
-    | Empty
-    | ElemT of int * tuple
+    | Elem  of int
+    | TElem of int * tuple
 
 (* Definizione costrutti primitivi *)
 type prim =
@@ -21,16 +21,46 @@ type prim =
     | Unbound
 (* Definizione delle espressioni *)
 and expr = 
-    | Ide of string               (* Lookup dell'identificatore nell'ambiente *)
-    | Val of prim                 (*              Valore costante             *)
-    | And of expr * expr          (********************************************)
-    | Or  of expr * expr          (*            Operazioni booleane           *)
-    | Not of expr                 (********************************************)
-    | OP  of string * expr * expr (*           Operazioni su interi           *)
-    | Ifthenelse of expr * expr * expr   (* Condizionale           *)
-    | Let   of string * expr * expr      (* Binding                *)
-    | Fun   of string * expr             (* Registrazione Funzione *)
-    | Apply of expr * expr               (* Valutazione funzione   *)
+    | Ide        of string               (* Lookup dell'identificatore nell'ambiente *)
+    | Val        of prim                 (*              Valore costante             *)
+    | And        of expr * expr          (********************************************)
+    | Or         of expr * expr          (*            Operazioni booleane           *)
+    | Not        of expr                 (********************************************)
+    | OP         of string * expr * expr (*           Operazioni su interi           *)
+    | Ifthenelse of expr * expr * expr   (*              Condizionale                *)
+    | Let        of string * expr * expr (*                 Binding                  *)
+    | Fun        of string * expr        (*          Registrazione Funzione          *)
+    | Apply      of expr * expr          (*           Valutazione funzione           *)
+    (* Funzioni relative alle tuple **************************************************)
+    | ExprTuple  of expr list
+    | Equals     of expr * expr
+    | At         of expr * expr
+    | Fst        of expr * expr
+    | TFunApply  of expr * expr
+
+(* Check di equalità tra tuple *)
+let rec checkTuples (t1 : tuple) (t2 : tuple) =
+    match (t1, t2) with
+    | (Elem i1, Elem i2)                 -> if i1 = i2 then true else false
+    | (TElem (i1, nt1), TElem (i2, nt2)) -> if i1 = i2 then (true && checkTuples nt1 nt2)
+                                                       else false
+    | _                                  -> false
+
+(* Funzione get dell'elemento all'indice index di una tupla *)
+let rec getElem (index : int) (tupl : tuple) =
+    match tupl with
+    | Elem i       -> if index = 0 then i else failwith ("Index out of bound")
+    | TElem (i, t) -> if index = 0 then i else getElem (index - 1) t
+
+(* Seleziona i primi elems elementi della tupla tupl (contando fino a uno) *)
+let rec selectFirst (elems : int) (tupl : tuple) =
+    match tupl with
+    | Elem i       -> if elems > 1 then failwith ("Tuple has not that much elements!")
+                      else if elems = 1 then Elem i
+                           else failwith ("Negative elems specified in base case")
+    | TElem (i, t) -> if elems <= 0 then failwith ("Wrong counting elements specified")
+                      else if elems = 1 then Elem i
+                           else TElem(i, selectFirst (elems - 1) t)
 
 (* Funzione di lookup per il tipo *)
 let rec lookup (ide : string) (env : prim env) =
@@ -107,12 +137,54 @@ let rec sem (exp : expr) (env : prim env) =
                                         sem e2 new_env
     (* Definizione di una nuova funzione, scoping statico *)
     (* (assume env al momento della definizione)          *)
-    | Fun (x, a)        -> Funval(exp, env)
+    | Fun (x, a)        ->  Funval(exp, env)
     (* Applicazione funzionale *)
     | Apply (e1, e2)    ->  (match (sem e1 env) with
                             | Funval(Fun (x, exp), env1) -> sem exp ((x, (sem e2 env)) :: env1)
                             | _                          -> failwith ("No function in apply"))
+    (* Espressione di una tupla *)
+    | ExprTuple exp1      -> 
+        (* Risolve una lista di espressioni dal quale costruire una tupla *)
+        let rec tupleResolve (exp : expr list) = 
+            (match exp with
+            | []      -> failwith ("Cannot resolve empty expression list")
+            | [x]     -> let xval = sem x env in
+                            (match xval with
+                            | Int i -> Elem i
+                            | _     -> failwith ("Wrong type tuple element"))
+            | x :: xs -> let xval = sem x env in
+                            (match xval with
+                            | Int i -> TElem (i, tupleResolve xs)
+                            | _     -> failwith ("Wrong type tuple element"))) 
+            in Tuple (tupleResolve exp1)
+    (* Confronto tra tuple *)
+    | Equals (exp1, exp2) -> let val1 = sem exp1 env in
+                                 let val2 = sem exp2 env in
+                                    (match (val1, val2) with
+                                    | Tuple t1, Tuple t2 -> Bool (checkTuples t1 t2)
+                                    | _                  -> failwith ("Operator defined only between tuples"))
+    (* Accesso elemento tupla *)
+    | At (index, exp1)    -> let val_id = sem index env in
+                                 let val_exp = sem exp1 env in
+                                     (match (val_id, val_exp) with
+                                     | (Int i, Tuple t) -> if i < 0 then failwith ("Wrong index specified")
+                                                                    else (Int (getElem i t))
+                                     | _                -> failwith ("Wrong syntax"))
+    (* Selezione primi elems elementi *)
+    | Fst (elems, exp1)   -> let val_el = sem elems env in
+                                 let val_exp = sem exp1 env in
+                                     (match (val_el, val_exp) with
+                                     | (Int i, Tuple t) -> Tuple (selectFirst i t)
+                                     | _                -> failwith ("Wrong syntax"))
+    (* Applicazione di funzione agli elementi di una tupla *)
+    | TFunApply (exp1, exp2) -> 
 
+let tuplexp1 = [Val(Int 1); Val(Int 2); Val(Int 3)]
+let tuplexp2 = [Val(Int 4); Val(Int 7); Val(Int (-10))]
 
+let expr_test_1 = At(Val(Int 0), ExprTuple tuplexp1)
+let expr_test_2 = At(Val(Int 1), ExprTuple tuplexp2)
+let expr_test_3 = At(Val(Int 1000), ExprTuple tuplexp1)
 
-
+let expr_test_4 = Fst(Val(Int 3), ExprTuple tuplexp2)
+let expr_test_5 = Fst(Val(Int 10), ExprTuple tuplexp1)
