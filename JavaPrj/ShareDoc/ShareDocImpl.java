@@ -78,18 +78,42 @@ public class ShareDocImpl implements ShareDoc {
         if (user == null || doc == null)
             return false;
 
-        // Controlla che le credenziali dell'utente siano valide.
-        for (User current : this.users) {
-            if (current.getNick().equals(user))
-                if (!current.validCred(user, password)) 
+        Iterator<User> itUsers = this.users.listIterator();
+        boolean        found   = false;
+
+        
+        while (!found && itUsers.hasNext()) {
+            // Cerca l'utente.
+            User current = itUser.next();
+
+            if (current.getNick().equals(user)) {
+                // L'utente è stato trovato.
+                if (!current.validCred(user, password))
+                    // Le credenziali non sono valide.
                     return false;
-                else break;
+                else
+                    // Trovato e credenziali valide.
+                    found = true;
+            }
         }
 
-        // Controlla che il documento non sia già presente nella lista
-        // dei documenti inseriti; se ci sono, ritorna false e non inserisce,
-        // altrimenti inserisce e ritorna true.
-        return this.docs.add(new DigitalDoc(doc, user));
+        // Se l'utente viene confermato essere esistente e corretto,
+        // controlla che il titolo del documento non sia già presente.
+        if (found) {
+            for (DigitalDoc current : this.docs) {
+                // Documento trovato, ritorna false.
+                if (doc.equals(current.getDoc()))
+                    return false;
+            }
+
+            // TODO: Prendi il testo.
+            String docText = null;
+            // Aggiungi elemento.
+            return this.docs.add(new DigitalDoc(user, doc, docText));
+        }
+        // Utente inserito non valido, non viene esteso l'insieme.
+        else 
+            return false;
     }
 
     // --------------------------------------------------------------------------- //
@@ -100,16 +124,27 @@ public class ShareDocImpl implements ShareDoc {
         if (user == null || doc == null)
             return false;
 
-        for (User current : this.users) {
-            if (current.getNick().equals(user))
-                if (!current.validCred(user, password) || !current.isOp())
+        Iterator<User> itUsers = this.users.listIterator();
+        boolean        found   = false;
+
+        while (!found && itUsers.hasNext()) {
+            // Cerca l'utente.
+            User current = itUser.next();
+
+            if (current.getNick().equals(user)) {
+                // L'utente è stato trovato.
+                if (!current.validCred(user, password))
+                    // Le credenziali non sono valide.
                     return false;
-                else break;
+                else
+                    // Trovato e credenziali valide.
+                    found = true;
+            }
         }
 
         // Rimuove il documento digitale desiderato dalla lista dei
         // documenti.
-        return this.docs.remove(new DigitalDoc(user, doc));
+        return found && this.docs.remove(new DigitalDoc(user, doc));
     }
 
     // --------------------------------------------------------------------------- //
@@ -131,7 +166,28 @@ public class ShareDocImpl implements ShareDoc {
 
             // TODO: controllare che l'autore il titolo del documento sia presente
             //       all'interno della lista e che l'utente abbia accesso al documento.
-            
+            DigitalDoc gotDoc = null;
+            boolean    found1 = false;
+            boolean    found2 = false;
+
+            for (DigitalDoc current : this.docs) {
+                // Cerca il documento nell'insieme dei documenti.
+                if (current.getDoc().equals(doc) && current.getUser().equals(user)) {
+                    // Documento trovato.
+                    gotDoc = current;
+                    found1 = true;
+                }
+
+                if (found1) 
+                    // Interrompi il ciclo se il documento è stato trovato.
+                    break;
+            }
+
+            if (!found1)
+                throw new WrongIDException("Document not found");
+
+            if ((found1 != null || found2 != null) && gotDoc != null)
+                // Leggi sta merda.
         }
     }
 
@@ -143,14 +199,14 @@ public class ShareDocImpl implements ShareDoc {
         // Parametri attuali errati
         if (fromName != null && toName != null && doc != null) {
             // Oggetti temporanei per la ricerca.
-            User tempAuth = new Client(fromName, 0);
+            User tempAuth = new Client(fromName, password);
             User tempShr  = new Client(toName, 0);
             // Riferimenti agli oggetti reali.
             User realAuth = null;
             User realShr  = null;
 
             // Controlla che gli utenti siano effettivamente registrati
-            if (!this.users.contains(tempAuth) && !this.users.contains(tempShr))
+            if (!this.users.contains(tempAuth) || !this.users.contains(tempShr))
                 throw new WrongIDExcpetion("Author or Other user (or both) not registered");
 
             // Itera sull'insieme degli utenti per cercare i riferimenti agli
@@ -171,6 +227,10 @@ public class ShareDocImpl implements ShareDoc {
                 if (realAuth != null && realShr != null)
                     break;
             }
+
+            if (realAuth == null || realShr == null)
+                throw new WrongIDException("Original references not found");
+
             // Riferimenti temporanei e originali al documento digitale, insieme
             // all'indice nella lista dei documenti (inizializzato a -1)
             DigitalDoc tempDoc = new DigitalDoc(fromName, doc);

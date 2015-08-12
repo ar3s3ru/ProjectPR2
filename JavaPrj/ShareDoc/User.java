@@ -33,12 +33,11 @@ public abstract class User {
         return this.nick;
     }
 
-    // RETURN: true se nick e pass coincidono con this.nick e this.pass, false
-    //         altrimenti.
+    // RETURN: true se pass è la password dell'utente, false altrimenti.
     // --------------------------------------------------------------------------- //
-    public boolean validCred(String nick, int pass) {
+    public boolean validPass(int pass) {
     // --------------------------------------------------------------------------- //
-        return this.nick.equals(nick) && (this.pass == pass);
+        return (this.pass == pass);
     }
 
     // EFFECTS: confronta l'oggetto con un oggetto User obj, e stabilisce se sono
@@ -51,6 +50,7 @@ public abstract class User {
     }
 
     public boolean isOp();
+    public boolean isDeletable();
 }
 
 public class Operator extends User {
@@ -66,6 +66,12 @@ public class Operator extends User {
     public boolean isOp() {
     // --------------------------------------------------------------------------- //
         return true;
+    }
+
+    // --------------------------------------------------------------------------- //
+    public boolean isDeletable() {
+    // --------------------------------------------------------------------------- //
+        return false;
     }
 }
 
@@ -83,5 +89,11 @@ public class Client extends User {
     public boolean isOp() {
     // --------------------------------------------------------------------------- //
         return false;
+    }
+
+    // --------------------------------------------------------------------------- //
+    public boolean isDeletable() {
+    // --------------------------------------------------------------------------- //
+        return true;
     }
 }

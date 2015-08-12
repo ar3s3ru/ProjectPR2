@@ -56,7 +56,7 @@ public class DigitalDoc {
 
     // EFFECTS: Confronta due oggetti di tipo DigitalDoc e stabilisce se sono uguali
     //          o meno.
-    // RETURN:  true se titolo e autore coincidono, false altrimenti.
+    // RETURN:  true se il titolo coincide, false altrimenti.
     // --------------------------------------------------------------------------- //
     public boolean equals(DigitalDoc obj) {
     // --------------------------------------------------------------------------- //
