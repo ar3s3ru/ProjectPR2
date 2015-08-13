@@ -188,6 +188,7 @@ let rec sem (exp : expr) (env : prim env) =
 
 let tuplexp1 = [Val(Int 1); Val(Int 2); Val(Int 3)]
 let tuplexp2 = [Val(Int 4); Val(Int 7); Val(Int (-10))]
+let tuplexp3 = [Val(Int 19); Val(Bool true); Val(Bool false); Val(Int 7)]
 
 let expr_test_1 = At(Val(Int 0), ExprTuple tuplexp1)
 let expr_test_2 = At(Val(Int 1), ExprTuple tuplexp2)
@@ -196,3 +197,17 @@ let expr_test_3 = At(Val(Int 1000), ExprTuple tuplexp1)
 let expr_test_4 = Fst(Val(Int 3), ExprTuple tuplexp2)
 let expr_test_5 = Fst(Val(Int 10), ExprTuple tuplexp1)
 let expr_test_6 = Fst(Val(Int 2), ExprTuple tuplexp2)
+
+let expr_test_7 = Equals(ExprTuple tuplexp1, ExprTuple tuplexp2)
+let expr_test_8 = Let ("incr", Fun ("x", OP("+", Ide "x", Val (Int 10))),
+                    TFunApply(Ide "incr", ExprTuple tuplexp2))
+let expr_test_8 = Let ("incr", Fun ("x", OP("+", Ide "x", Val (Int 10))),
+                    TFunApply(Ide "incr", ExprTuple tuplexp3))
+let expr_test_9 = Let ("incr", Fun ("x", OP("+", Ide "x", Val (Int 10))),
+                    TFunApply(Ide "incr", Fst(Val(Int 1), ExprTuple tuplexp3)))
+
+(* Espressione nella specifica del progetto *)
+let expr_specific = Let ("add5", Fun ("x", OP("+", Ide "x", Val (Int 5))),
+                        Let ("t", ExprTuple ([Val (Int 5); Val (Int 6); Val (Bool true); Val (Int 7)]), 
+                            TFunApply(Ide "add5", Fst (Val (Int 2), Ide "t"))))
+
