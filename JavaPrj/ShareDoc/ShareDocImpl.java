@@ -85,7 +85,37 @@ public class ShareDocImpl implements ShareDoc {
         // Esegue la procedura solo se name è un oggetto valido,
         // e vi sia loggato un operatore.
         if (name != null && this.isLogged && this.usrLogged.isOp()) {
-            // DA IMPLEMENTARE
+            // Riferimento all'utente da eliminare.
+            User toDelete   = null;
+            boolean gotUser = false;
+            // Cerca l'utente nell'insieme degli utenti.
+            for (User current : this.users) {
+                // Utente trovato.
+                if (current.getNick().equals(name)) {
+                    // Copia il riferimento ed esci dal ciclo.
+                    toDelete = current;
+                    gotUser  = true;
+                    break;
+                }
+            }
+
+            // L'utente è stato trovato, esegue clean-up.
+            if (gotUser) {
+                // Itera nell'insieme dei documenti condivisi del quale l'autore
+                // è utente beneficiario, ed elimina i riferimenti nella lista
+                // dell'utente autore.
+                for (SharedDoc current : this.toDelete.sharedWith) {
+                    current.getAuthor().sharedTo.remove(current);
+                }
+                // Elimina i riferimenti dei documenti condivisi dall'utente
+                // dagli insiemi degli utenti con i quali 
+                // i documenti son stati condivisi.
+                for (ShareDoc current : this.toDelete.sharedTo) {
+                    current.getUser().sharedWith.remove(current);
+                }
+                // Elimina il riferimento all'utente nell'insieme degli utenti.
+                this.users.remove(toDelete);
+            }
         }
     }
 
