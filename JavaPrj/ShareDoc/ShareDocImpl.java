@@ -4,10 +4,10 @@
   *  Il codice, in ogni sua parte, è opera originale dell'autore.
   */
 public class ShareDocImpl implements ShareDoc {
-
+    // Variabili d'istanza che denotano il login.
     private boolean isLogged;
     private User    usrLogged;
-
+    // Variabili d'istanza che denotano lista utenti e lista dei documenti presenti.
     private List<User>   users;
     private List<String> name_docs;
 
@@ -29,7 +29,9 @@ public class ShareDocImpl implements ShareDoc {
         this.users.add(new Operator(op_nick, op_pass));
     }
 
+    // --------------------------------------------------------------------------- //
     public boolean logIn(String nick, int pass) {
+    // --------------------------------------------------------------------------- //
         // Precondizioni verificate.
         if (nick != null && !this.isLogged) {
             // Itera sulla collezione di utenti.
@@ -50,7 +52,9 @@ public class ShareDocImpl implements ShareDoc {
         return this.isLogged;
     }
 
+    // --------------------------------------------------------------------------- //
     public boolean logOut() {
+    // --------------------------------------------------------------------------- //
         // Se vi è un login attivo...
         if (this.isLogged) {
             // ...esci dal login.
@@ -99,8 +103,9 @@ public class ShareDocImpl implements ShareDoc {
                 }
             }
 
-            // L'utente è stato trovato, esegue clean-up.
-            if (gotUser) {
+            // L'utente è stato trovato, esegue clean-up se l'utente
+            // è eliminabile.
+            if (gotUser && toDelete.isDeletable()) {
                 // Itera nell'insieme dei documenti condivisi del quale l'autore
                 // è utente beneficiario, ed elimina i riferimenti nella lista
                 // dell'utente autore.
@@ -135,7 +140,18 @@ public class ShareDocImpl implements ShareDoc {
         if (!this.usrLogged.getNick(user) || !this.usrLogged.validPass(password))
             return false;
 
-        // DA IMPLEMENTARE.
+        // Controlla che il nome del documento non sia stato già utilizzato
+        // per altri documenti.
+        for (String docName : this.name_docs) {
+            if (docName.equals(doc))
+                return false;
+        }
+
+        // Aggiunge il documento alla lista dei documenti dell'utente.
+        String textToGet = null;
+        // DA IMPLEMENTARE: acquisizione testo del documento.
+        return this.name_docs.add(doc) &&
+            this.usrLogged.docs.add(new DigitalDoc(doc, user, textToGet));
     }
 
     // --------------------------------------------------------------------------- //
@@ -147,7 +163,42 @@ public class ShareDocImpl implements ShareDoc {
             !this.isLogged || this.usrLogged.isOp())
             return false;
 
-        // DA IMPLEMENTARE.
+        DigitalDoc toDelete     = null;
+        boolean    isDocPresent = false;
+
+        for (DigitalDoc current : this.usrLogged.docs) {
+            // Scorri nella lista dei documenti dell'utente per cercare
+            // il documento di nome "doc".
+            if (current.getDoc().equals(doc)) {
+                // Documento trovato, copia riferimento ed esci dal ciclo.
+                toDelete     = current;
+                isDocPresent = true;
+                break;
+            }
+        }
+
+        if (!isDocPresent)
+            // Documento non trovato, ritorna false.
+            return false;
+
+        // Cerca nelle notifiche di condivisione la presenza
+        // del documento.
+        for (SharedDoc current : this.usrLogged.sharedTo) {
+            // Trovata una notifica di condivisione.
+            if (current.getShrDoc.equals(toDelete)) {
+                // Elimina dalla coda di condivisione
+                // del cliente.
+                current.getUser().sharedWith.remove(current);
+                // Elimina dalla coda di condivisione del
+                // servente (autore).
+                this.usrLogged.sharedTo.remove(current);
+            }
+        }
+
+        // Rimuovi il nome del documento dall'insieme dei nomi dei documenti
+        // e dalla lista dei documenti dell'utente.
+        return this.name_docs.remove(doc) &&
+            this.usrLogged.docs.remove(toDelete);
     }
 
     // --------------------------------------------------------------------------- //
@@ -158,7 +209,48 @@ public class ShareDocImpl implements ShareDoc {
         // Esegue la procedura solo nel caso di parametri validi.
         if (user != null && doc != null && 
             this.isLogged && !this.usrLogged.isOp()) {
-            // DA IMPLEMENTARE.
+
+            if (!this.usrLogged.getNick().equals(user) ||
+                !this.usrLogged.validPass(password))
+                // Credenziali invalide, l'utente non è loggato.
+                throw new WrongIDException("Insert invalid credentials");
+
+            DigitalDoc toRead   = null;
+            boolean    docFound = false;
+            // Cerca il documento nella lista dei documenti dell'utente.
+            for (DigitalDoc current : this.usrLogged.docs) {
+                if (current.getDoc().equals(doc)) {
+                    toRead   = current;
+                    docFound = true;
+                    break;
+                }
+            }
+
+            if (!docFound) {
+                // Cerca nell'insieme di documenti condivisi nel quale l'utente
+                // è cliente.
+                for (SharedDoc current : this.usrLogged.sharedWith) {
+                    // Documento condiviso trovato, copia riferimento.
+                    if (current.getShrDoc().getDoc().equals(doc)) {
+                        toRead   = current.getShrDoc();
+                        docFound = true;
+                        break;
+                    }
+                }
+            }
+
+            // Legge il documento solo se è stato trovato.
+            if (docFound) {
+                // Legge il documento
+                System.out.print("Document: ");
+                System.out.println(toRead.getDoc());
+
+                System.out.print("Text: ");
+                System.out.println(toRead.getText());
+            }
+            // Documento non trovato, solleva eccezione.
+            else
+                throw new WrongIDException("Document not found");
         }
     }
 
@@ -170,7 +262,54 @@ public class ShareDocImpl implements ShareDoc {
         // Parametri attuali errati
         if (fromName != null && toName != null && doc != null &&
             this.isLogged && !this.usrLogged.isOp()) {
-            // DA IMPLEMENTARE.
+            
+            if (!this.usrLogged.getNick().equals(fromName) ||
+                !this.usrLogged.validPass(password))
+                // Le credenziali non sono quelle dell'utente loggato.
+                throw new WrongIDException("Invalid user credentials");
+
+            // Riferimenti all'utente cliente della condivisione.
+            User    clientRefer = null;
+            boolean clientFound = false;
+
+            for (User current : this.users) {
+                // Utente cliente trovato.
+                if (current.getNick().equals(toName)) {
+                    // Copia i riferimenti ed esci dal ciclo.
+                    clientRefer = current;
+                    clientFound = true;
+                    break;
+                }
+            }
+
+            if (!clientFound)
+                // Cliente non trovato, solleva eccezione.
+                throw new WrongIDException("Client user not found");
+
+            // Riferimenti al documento digitale da condividere.
+            DigitalDoc shrDoc   = null;
+            boolean    foundDoc = false;
+
+            for (DigitalDoc current : this.usrLogged.docs) {
+                // Documento da condividere trovato.
+                if (current.getDoc().equals(doc)) {
+                    // Copia i riferimenti.
+                    shrDoc   = current;
+                    foundDoc = true;
+                    break;
+                }
+            }
+
+            if (!foundDoc)
+                // Documento non trovato, solleva eccezione.
+                throw new WrongIDException("Document not found");
+
+            // Crea nuovo elemento condiviso.
+            SharedDoc toShare = new SharedDoc(usrLogged, clientRefer, shrDoc);
+            // Inserisci documento condiviso nelle code di condivisione
+            // del servente e del cliente.
+            this.usrLogged.sharedTo.add(toShare);
+            clientRefed.sharedWith.add(toShare);
         }
     }
 
@@ -180,18 +319,33 @@ public class ShareDocImpl implements ShareDoc {
         // TODO: invariante di rappresentazione.
     // --------------------------------------------------------------------------- //
         if (user == null)
+            // Nome utente non valido.
             throw new WrongIDException("User is null");
 
         if (!this.isLogged)
+            // Nessun login corrente.
             throw new WrongIDException("No login session in current");
 
         if (this.usrLogged.isOp())
+            // Il login corrente è di un operatore.
             throw new WrongIDException("Operator is logged in");
 
         if (!this.usrLogged.getNick().equals(user) || 
             !this.usrLogged.validPas(password))
+            // Credenziali non valide.
             throw new WrongIDException("User credentials are not valid");
 
-        // DA IMPLEMENTARE.
+        // Copia il riferimento all'elemento in testa alla coda di condivisione
+        // ed elimina dalla coda stessa.
+        SharedDoc toGet = this.usrLogged.sharedTo.poll();
+
+        if (toGet == null)
+            // Se il riferimento è null, la coda è vuota.
+            throw new EmptyQueueException("Empty queue");
+
+        // Rimuovi la condivisione anche dalla coda del cliente.
+        toGet.getUser().sharedWith.remove(toGet);
+        // Ritorna il titolo del documento condiviso eliminato.
+        return toGet.getShrDoc().getDoc();
     }
 }

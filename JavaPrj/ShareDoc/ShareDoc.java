@@ -11,7 +11,7 @@ public interface ShareDoc {
 
     // =========================================================================== //
 
-    // REQUIRES: name != null
+    // REQUIRES: name != null e sessione login attiva (operatore)
     // MODIFIES: this.users
     // EFFECTS:  aggiunge (name, password) alla lista degli utenti, se non è già
     //           presente un utente con lo stesso nome.
@@ -20,23 +20,23 @@ public interface ShareDoc {
     public boolean addUser(String name, int password);
     // --------------------------------------------------------------------------- //
 
-    // REQUIRES: name != null
-    // MODIFIES: this.users && this.shares && this.docs
+    // REQUIRES: name != null e sessione login attiva (operatore)
+    // MODIFIES: this.users
     // EFFECTS:  Elimina l’utente (se presente) e tutti i suoi documenti digitali.
     // --------------------------------------------------------------------------- //
     public void removeUser(String name);
     // --------------------------------------------------------------------------- //
 
-    // REQUIRES: user != null && doc != null
-    // MODIFIES: this.docs
+    // REQUIRES: user != null && doc != null e sessione login attiva (cliente)
+    // MODIFIES: this.usrLogged
     // EFFECTS:  Aggiunge al sistema il documento digitale identificato dal nome.
     // RETURN:   true se il documento viene aggiunto, false altrimenti.
     // --------------------------------------------------------------------------- //
     public boolean addDoc(String user, String doc, int password);
     // --------------------------------------------------------------------------- //
 
-    // REQUIRES: user != null && doc != null
-    // MODIFIES: this.docs && this.shares
+    // REQUIRES: user != null && doc != null e sessione login attiva (cliente)
+    // MODIFIES: this.usrLogged
     // EFFECTS:  Rimuove dal sistema il documento digitale identificato dal nome. 
     // RETURN:   Restituisce true se l’operazione ha successo,
     //           false se fallisce perchè non esiste un documento con quel nome.
@@ -44,7 +44,7 @@ public interface ShareDoc {
     public boolean removeDoc(String user, String doc, int password);
     // --------------------------------------------------------------------------- //
 
-    // REQUIRES: user != null && doc != null
+    // REQUIRES: user != null && doc != null e sessione login attiva (cliente)
     // EFFECTS:  Legge il documento digitale identificato dal nome.
     // THROWS:   WrongIDException se user non é il nome di un utente registrato,
     //           o se non esiste un documento con quel nome,
@@ -55,7 +55,8 @@ public interface ShareDoc {
     // --------------------------------------------------------------------------- //
 
     // REQUIRES: fromName != null && toName != null && doc != null
-    // MODIFIES: this.docs && this.shares
+    //           e sessione login attiva (cliente)
+    // MODIFIES: this.usrLogged
     // EFFECTS:  Notifica una condivisione di documento.
     // THROWS:   WrongIDException se fromName o toName non sono nomi 
     //           di utenti registrati, o se non esiste un documento con quel nome,
@@ -65,8 +66,8 @@ public interface ShareDoc {
         throws WrongIDException;
     // --------------------------------------------------------------------------- //
 
-    // REQUIRES: user != null
-    // MODIFIES: this.shares && this.docs
+    // REQUIRES: user != null e sessione login attiva (cliente)
+    // MODIFIES: this.usrLogged
     // EFFECTS:  Restituisce il nome del documento condiviso cancellandolo dalla coda 
     //           delle notifiche di condivisione.
     // THROWS:   EmptyQueueException se non ci sono notifiche;

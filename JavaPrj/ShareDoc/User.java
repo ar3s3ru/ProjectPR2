@@ -13,14 +13,14 @@ public abstract class User {
     private String nick;
     private int    pass;
 
-    public LinkedList<SharedDoc> sharedWith;
-    public LinkedList<SharedDoc> sharedTo;
-    public Vector<DigitalDoc>    docs;
+    public LinkedList<SharedDoc> sharedWith; // L'utente è cliente condivisione.
+    public LinkedList<SharedDoc> sharedTo;   // L'utente è servente condivisione.
+    public Vector<DigitalDoc>    docs;       // Lista documenti utente.
 
     // --------------------------------------------------------------------------- //
     public User(String nick, int pass) 
         throws IllegalArgumentException {
-    // --------------------------------------------------------------------------- //
+    // -------------------------------------------------------------------------- //
         // Parametro attuale non valido.
         if (nick == null)
             throw new IllegalArgumentException("Parameter \'nick\' is null");
