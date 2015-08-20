@@ -1,7 +1,7 @@
-/**
-  *  DigitalDoc.java
-  *  Autore: Danilo Cianfrone, matricola 501292
-  *  Il codice, in ogni sua parte, è opera originale dell'autore.
+/** 
+  * DigitalDoc.java
+  * Autore: Danilo Cianfrone, matricola 501292
+  * Il codice, in ogni sua parte, è opera originale dell'autore.
   */
 public class DigitalDoc {
     // OVERVIEW: classe che descrive un documento digitale, con nome "doc" e
@@ -60,6 +60,6 @@ public class DigitalDoc {
     // --------------------------------------------------------------------------- //
     public boolean equals(DigitalDoc obj) {
     // --------------------------------------------------------------------------- //
-        return this.doc.equals(obj.getDoc()) && this.user.equals(obj.getUser());
+        return this.doc.equals(obj.getDoc());
     }
 }

@@ -1,7 +1,7 @@
 /**
-  *  ShareDoc.java
-  *  Autore: Danilo Cianfrone, matricola 501292
-  *  Il codice, in ogni sua parte, è opera originale dell'autore.
+  * ShareDoc.java
+  * Autore: Danilo Cianfrone, matricola 501292
+  * Il codice, in ogni sua parte, è opera originale dell'autore.
   */
 public interface ShareDoc {
     // OVERVIEW: modulo Java che simula la gestione di un sistema di condivisione di
@@ -21,7 +21,7 @@ public interface ShareDoc {
     // --------------------------------------------------------------------------- //
 
     // REQUIRES: name != null
-    // MODIFIES: this.users
+    // MODIFIES: this.users && this.shares && this.docs
     // EFFECTS:  Elimina l’utente (se presente) e tutti i suoi documenti digitali.
     // --------------------------------------------------------------------------- //
     public void removeUser(String name);
@@ -36,7 +36,7 @@ public interface ShareDoc {
     // --------------------------------------------------------------------------- //
 
     // REQUIRES: user != null && doc != null
-    // MODIFIES: this.docs
+    // MODIFIES: this.docs && this.shares
     // EFFECTS:  Rimuove dal sistema il documento digitale identificato dal nome. 
     // RETURN:   Restituisce true se l’operazione ha successo,
     //           false se fallisce perchè non esiste un documento con quel nome.

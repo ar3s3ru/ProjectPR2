@@ -10,8 +10,12 @@ public abstract class User {
 
     // =========================================================================== //
 
-    private String  nick;
-    private int     pass;
+    private String nick;
+    private int    pass;
+
+    public LinkedList<SharedDoc> sharedWith;
+    public LinkedList<SharedDoc> sharedTo;
+    public Vector<DigitalDoc>    docs;
 
     // --------------------------------------------------------------------------- //
     public User(String nick, int pass) 
@@ -21,8 +25,12 @@ public abstract class User {
         if (nick == null)
             throw new IllegalArgumentException("Parameter \'nick\' is null");
 
-        this.nick = nick;
-        this.pass = pass;
+        this.nick   = nick;
+        this.pass   = pass;
+        
+        this.sharedWith = new LinkedList<>();
+        this.sharedTo   = new LinkedList<>();
+        this.docs       = new Vector<>();
     }
 
     // EFFECTS: ritorna il nome dell'utente.
@@ -49,51 +57,6 @@ public abstract class User {
         return this.nick.equals(obj.getNick());
     }
 
-    public boolean isOp();
-    public boolean isDeletable();
-}
-
-public class Operator extends User {
-    // OVERVIEW: sottoclasse di User, usata per denotare un utente Operatore.
-    //           L'utente Operatore può aggiungere o rimuovere utenti Clienti.
-    // --------------------------------------------------------------------------- //
-    public Operator(String nick, int pass) {
-    // --------------------------------------------------------------------------- //
-        super(nick, pass);
-    }
-
-    // --------------------------------------------------------------------------- //
-    public boolean isOp() {
-    // --------------------------------------------------------------------------- //
-        return true;
-    }
-
-    // --------------------------------------------------------------------------- //
-    public boolean isDeletable() {
-    // --------------------------------------------------------------------------- //
-        return false;
-    }
-}
-
-public class Client extends User {
-    // OVERVIEW: sottoclasse di User, usata per denotare un utente Cliente.
-    //           L'utente Cliente può inserire, rimuovere e leggere i propri
-    //           documenti, e condividerli con altri utenti.
-    // --------------------------------------------------------------------------- //
-    public Client(String nick, int pass) {
-    // --------------------------------------------------------------------------- //
-        super(nick, pass);
-    }
-
-    // --------------------------------------------------------------------------- //
-    public boolean isOp() {
-    // --------------------------------------------------------------------------- //
-        return false;
-    }
-
-    // --------------------------------------------------------------------------- //
-    public boolean isDeletable() {
-    // --------------------------------------------------------------------------- //
-        return true;
-    }
+    public abstract boolean isOp();
+    public abstract boolean isDeletable();
 }
