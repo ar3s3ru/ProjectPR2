@@ -3,6 +3,9 @@
   *  Autore: Danilo Cianfrone, matricola 501292
   *  Il codice, in ogni sua parte, è opera originale dell'autore.
   */
+import java.util.List;
+import java.util.LinkedList;
+
 public class ShareDocImpl implements ShareDoc {
     // Variabili d'istanza che denotano il login.
     private boolean isLogged;
@@ -39,7 +42,7 @@ public class ShareDocImpl implements ShareDoc {
                 // Utente trovato.
                 if (current.getNick().equals(nick)) {
                     // Credenziali valide, accedi.
-                    if (current.validPass(pass)) {
+                    if (current.validPass(pass)) {
                         this.usrLogged = current;
                         this.isLogged  = true;
                     }
@@ -90,8 +93,8 @@ public class ShareDocImpl implements ShareDoc {
         // e vi sia loggato un operatore.
         if (name != null && this.isLogged && this.usrLogged.isOp()) {
             // Riferimento all'utente da eliminare.
-            User toDelete   = null;
-            boolean gotUser = false;
+            User    toDelete = null;
+            boolean gotUser  = false;
             // Cerca l'utente nell'insieme degli utenti.
             for (User current : this.users) {
                 // Utente trovato.
@@ -109,13 +112,13 @@ public class ShareDocImpl implements ShareDoc {
                 // Itera nell'insieme dei documenti condivisi del quale l'autore
                 // è utente beneficiario, ed elimina i riferimenti nella lista
                 // dell'utente autore.
-                for (SharedDoc current : this.toDelete.sharedWith) {
+                for (SharedDoc current : toDelete.sharedWith) {
                     current.getAuthor().sharedTo.remove(current);
                 }
                 // Elimina i riferimenti dei documenti condivisi dall'utente
                 // dagli insiemi degli utenti con i quali 
                 // i documenti son stati condivisi.
-                for (ShareDoc current : this.toDelete.sharedTo) {
+                for (SharedDoc current : toDelete.sharedTo) {
                     current.getUser().sharedWith.remove(current);
                 }
                 // Elimina il riferimento all'utente nell'insieme degli utenti.
@@ -133,11 +136,11 @@ public class ShareDocImpl implements ShareDoc {
         // Inoltre, c'è bisogno di un login da parte di un utente Client,
         // non Operator.
         if (user == null   || doc == null ||
-            !this.isLogged || this.isOp())
+            !this.isLogged || this.usrLogged.isOp())
             return false;
 
         // Credenziali invalide, ritorna false.
-        if (!this.usrLogged.getNick(user) || !this.usrLogged.validPass(password))
+        if (!this.usrLogged.getNick().equals(user) || !this.usrLogged.validPass(password))
             return false;
 
         // Controlla che il nome del documento non sia stato già utilizzato
@@ -185,7 +188,7 @@ public class ShareDocImpl implements ShareDoc {
         // del documento.
         for (SharedDoc current : this.usrLogged.sharedTo) {
             // Trovata una notifica di condivisione.
-            if (current.getShrDoc.equals(toDelete)) {
+            if (current.getShrDoc().equals(toDelete)) {
                 // Elimina dalla coda di condivisione
                 // del cliente.
                 current.getUser().sharedWith.remove(current);
@@ -309,7 +312,7 @@ public class ShareDocImpl implements ShareDoc {
             // Inserisci documento condiviso nelle code di condivisione
             // del servente e del cliente.
             this.usrLogged.sharedTo.add(toShare);
-            clientRefed.sharedWith.add(toShare);
+            clientRefer.sharedWith.add(toShare);
         }
     }
 
@@ -331,7 +334,7 @@ public class ShareDocImpl implements ShareDoc {
             throw new WrongIDException("Operator is logged in");
 
         if (!this.usrLogged.getNick().equals(user) || 
-            !this.usrLogged.validPas(password))
+            !this.usrLogged.validPass(password))
             // Credenziali non valide.
             throw new WrongIDException("User credentials are not valid");
 

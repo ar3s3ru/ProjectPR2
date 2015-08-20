@@ -63,7 +63,7 @@ public class SharedDoc {
 
     // RETURN: ritorna il riferimento al documento digitale.
     // --------------------------------------------------------------------------- //
-    public User getShrDoc() {
+    public DigitalDoc getShrDoc() {
     // --------------------------------------------------------------------------- //
         return this.shrDoc;
     }
