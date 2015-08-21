@@ -4,6 +4,7 @@
   *  Il codice, in ogni sua parte, è opera originale dell'autore.
   */
 import java.util.List;
+import java.util.Scanner;
 import java.util.LinkedList;
 
 public class ShareDocImpl implements ShareDoc {
@@ -63,9 +64,11 @@ public class ShareDocImpl implements ShareDoc {
             // ...esci dal login.
             this.usrLogged = null;
             this.isLogged  = false;
+            // Logout effettuato.
+            return true;
         }
-        // Ritorna lo stato di logout (negazione di login).
-        return !(this.isLogged);
+        // Il logout non è stato effettuato.
+        return false;
     }
 
     // --------------------------------------------------------------------------- //
@@ -79,11 +82,19 @@ public class ShareDocImpl implements ShareDoc {
 
         // Aggiunge un nuovo utente alla lista, ritorna
         // true in caso di successo, false altrimenti.
-        Client toAdd = new Client(name, password);
+        User    toAdd = new Client(name, password);
+        boolean isContained = false;
         // Controlla che l'utente non sia già presente nella collezione.
-        if (!this.users.contains(toAdd))
-            return this.users.add(toAdd);
-        else return false;
+        for (User current : this.users) {
+            // L'utente è già presente, segnala...
+            if (current.equals(toAdd)) {
+                // ...ed esce dal ciclo.
+                isContained = true;
+                break;
+            }
+        }
+        // Esegue la add() solo se l'utente non è presente.
+        return !isContained && this.users.add(toAdd);
     }
 
     // --------------------------------------------------------------------------- //
@@ -151,8 +162,10 @@ public class ShareDocImpl implements ShareDoc {
         }
 
         // Aggiunge il documento alla lista dei documenti dell'utente.
-        String textToGet = null;
-        // DA IMPLEMENTARE: acquisizione testo del documento.
+        Scanner input = new Scanner(System.in);
+        System.out.print("Insert text here: ");
+        String textToGet = input.nextLine();
+
         return this.name_docs.add(doc) &&
             this.usrLogged.docs.add(new DigitalDoc(doc, user, textToGet));
     }
