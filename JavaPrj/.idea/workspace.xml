@@ -1,19 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="714617a8-f9db-443d-a1d6-8682a13bd4e4" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/bin/Client.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/bin/DigitalDoc.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/bin/EmptyQueueException.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/bin/Operator.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/bin/ShareDoc.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/bin/ShareDocImpl.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/bin/SharedDoc.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/bin/User.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/bin/WrongIDException.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/make.py" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ShareDoc/ShareDocImpl.java" afterPath="$PROJECT_DIR$/ShareDoc/ShareDocImpl.java" />
-    </list>
+    <list default="true" id="714617a8-f9db-443d-a1d6-8682a13bd4e4" name="Default" comment="" />
     <ignored path="JavaPrj.iws" />
     <ignored path=".idea/workspace.xml" />
     <ignored path="$PROJECT_DIR$/out/" />
@@ -347,12 +335,12 @@
       <created>1440144128431</created>
       <option name="number" value="Default" />
       <updated>1440144128431</updated>
-      <workItem from="1440144130114" duration="5274000" />
+      <workItem from="1440144130114" duration="5472000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="5274000" />
+    <option name="totallyTimeSpent" value="5472000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1280" height="773" extended-state="6" />
@@ -367,7 +355,7 @@
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39914772" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32954547" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32954547" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />

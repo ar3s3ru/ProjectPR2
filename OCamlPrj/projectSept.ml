@@ -186,28 +186,167 @@ let rec sem (exp : expr) (env : prim env) =
                                                     in Tuple (applyFun (sem exp1 env) t)
                                 | _ -> failwith ("Wrong type"))
 
+(*******************************************************)
+(*******************************************************)
+(**                 TEST INTERPRETE                   **)
+(*******************************************************)
+(*******************************************************)
+
+(* Funzione di evalutazione e comparazione dei test *)
+let run_test (test_exp: expr) (test_res: prim) (i: int) =
+    let eval_test = sem test_exp [] in
+        match test_res, eval_test with 
+        | (Int k, Int h)     -> if k == h then (Printf.printf "Test %d superato!\n" i) else (Printf.printf "Test %d fallito...\n" i)
+        | (Bool z, Bool v)   -> if z == v then (Printf.printf "Test %d superato!\n" i) else (Printf.printf "Test %d fallito...\n" i)
+        | (Unbound, Unbound) -> (Printf.printf "Test %i superato!\n" i)
+        | _ -> (Printf.printf "Test %d fallito, pattern invalido.\n" i)
+
+(* Funzione di evalutazione delle espressioni scorrette; se torna Unbound
+   allora failwith è stata catturata *)
+let myFailwith (text_exp: expr) =
+    try sem text_exp [] with
+        Failure e -> Unbound
+
+let check (text_exp: expr) (i: int) =
+    let value = myFailwith text_exp in
+        if value == Unbound then (Printf.printf "failwith in test %d catturata, ok!\n" i)
+                            else (Printf.printf "failwith in test %d non catturata, errore...\n" i)
+
+(* x non definita nell'ambiente, ritorna Unbound *)
+let test1 = Ide("x")
+let res_test1 = Unbound
+(* x definito nell'ambiente, ritorna Int(12) *)
+let test2 = Let("x", Val(Int(12)), Ide("x"))
+let res_test2 = Int(12)
+(* x definito, ritorna Bool(true) *)
+let test3 = Let("x", Val(Bool(true)), Ide("x"))
+let res_test3 = Bool(true)
+(* Prova di And(true, false), ritorna Bool(false) *)
+let test4 = Let("x", Val(Bool(true)),
+                Let("y", Val(Bool(false)),
+                    And(Ide("x"), Ide("y"))))
+let res_test4 = Bool(false)
+(* Prova di Or(false, true), ritorna Bool(true) *)
+let test5 = Let("x", Val(Bool(false)),
+                Let("y", Val(Bool(true)),
+                    Or(Ide("x"), Ide("y"))))
+let res_test5 = Bool(true)
+(* Prova di Not(false) e Not(true), ritorna rispettivamente *)
+(*                Bool(true) e Bool(false)                  *)
+let test6 = Let("x", Val(Bool(false)), Not(Ide("x")))
+let res_test6 = Bool(true)
+
+let test7 = Let("x", Val(Bool(true)), Not(Ide("x")))
+let res_test7 = Bool(false)
+(* Prova And, Or e Not su tipi sbagliati *)
+let test8 = Let("x", Val(Int(1)),
+                Let("y", Val(Int(2)),
+                    And(Ide("x"), Ide("y"))))
+let test9 = Let("x", Val(Int(1)),
+                Let("y", Val(Int(2)),
+                    Or(Ide("x"), Ide("y"))))
+let test10 = Let("x", Val(Int(1)), Not(Ide("x")))
+(* Condizionale, ritorna Int(10) *)
+let test11 = Ifthenelse(Val(Bool(true)), Val(Int(10)), Val(Int(11)))
+let res_test11 = Int(10)
+(* Condizionale, ritorna Bool(true) *)
+let test12 = Let("x", Val(Bool(false)),
+                 Ifthenelse(Ide("x"), Ide("x"), Not(Ide("x"))))
+let res_test12 = Bool(true)
+(* Condizionale, valore errato *)
+let test13 = Let("x", Val(Int(19)),
+                 Ifthenelse(Ide("x"), Ide("x"), Val(Int(1))))
+(* Applicazione di funzione         *)
+(* let x = 1 in                     *)
+(*     let incr = fun x -> x + 1 in *)
+(*         incr x ;;                *)
+let test14 = Let ("x", Val (Int 1), 
+                 Let ("incr", Fun ("x", OP("+", Ide "x", Val (Int 1))),
+                     Apply(Ide "incr", Ide "x")))
+let res_test14 = Int 2
+(* let incr = fun x -> x + 1 in *)
+(*     let x = 5 in             *)
+(*         incr x ;;            *)
+let test15 = Let ("incr",
+                 Fun ("x", OP ("+", Ide "x", Val (Int 1))), 
+                     Let ("x", Val (Int 5), 
+                         Apply (Ide "incr", Ide "x")))
+let res_test15 = Int 6
+
+(* Alcune tuple definite per eseguire i test *)
 let tuplexp1 = [Val(Int 1); Val(Int 2); Val(Int 3)]
 let tuplexp2 = [Val(Int 4); Val(Int 7); Val(Int (-10))]
 let tuplexp3 = [Val(Int 19); Val(Bool true); Val(Bool false); Val(Int 7)]
 
+(* Test funzione At *)
 let expr_test_1 = At(Val(Int 0), ExprTuple tuplexp1)
+let res__test_1 = Int 1
+
 let expr_test_2 = At(Val(Int 1), ExprTuple tuplexp2)
-let expr_test_3 = At(Val(Int 1000), ExprTuple tuplexp1)
+let res__test_2 = Int 7
 
+let expr_test_3 = At(Val(Int 1000), ExprTuple tuplexp1) (* Eccezione in questo caso *)
+
+(* Test funzione Fst *)
 let expr_test_4 = Fst(Val(Int 3), ExprTuple tuplexp2)
-let expr_test_5 = Fst(Val(Int 10), ExprTuple tuplexp1)
-let expr_test_6 = Fst(Val(Int 2), ExprTuple tuplexp2)
+let res__test_4 = Tuple (TElem (Int 4, TElem (Int 7, Elem (Int (-10)))))
 
-let expr_test_7 = Equals(ExprTuple tuplexp1, ExprTuple tuplexp2)
-let expr_test_8 = Let ("incr", Fun ("x", OP("+", Ide "x", Val (Int 10))),
-                    TFunApply(Ide "incr", ExprTuple tuplexp2))
-let expr_test_8 = Let ("incr", Fun ("x", OP("+", Ide "x", Val (Int 10))),
-                    TFunApply(Ide "incr", ExprTuple tuplexp3))
-let expr_test_9 = Let ("incr", Fun ("x", OP("+", Ide "x", Val (Int 10))),
-                    TFunApply(Ide "incr", Fst(Val(Int 1), ExprTuple tuplexp3)))
+let expr_test_5 = Fst(Val(Int 10), ExprTuple tuplexp1)  (* Eccezione, numero di el troppo alto *)
+
+let expr_test_6 = Fst(Val(Int 2), ExprTuple tuplexp2)
+let res__test_6 = Tuple (TElem (Int 4, Elem (Int 7)))
+
+(* Test funzione Equals *)
+let expr_test_7   = Equals(ExprTuple tuplexp1, ExprTuple tuplexp2)
+let res__test_7   = Bool false
+
+let expr_test_7_1 = Equals(ExprTuple tuplexp1, ExprTuple tuplexp1)
+let res__test_7_1 = Bool true
+
+(* Test funzione TFunApply *)
+(* let incr = function x -> x + 10 *)
+(*     in incr@[4; 7; -10]         *)
+let expr_test_8  = Let ("incr", Fun ("x", OP("+", Ide "x", Val (Int 10))),
+                     TFunApply(Ide "incr", ExprTuple tuplexp2))
+let res__test_8  = Tuple (TElem (Int 14, TElem (Int 17, Elem (Int 0))))
+
+(* let incr = function x -> x + 10         *)
+(*     in incr@[19; true; false; 7]        *)
+(*                                         *)
+(* (Applicazione a tipi errati, eccezione) *)
+let expr_test_9  = Let ("incr", Fun ("x", OP("+", Ide "x", Val (Int 10))),
+                     TFunApply(Ide "incr", ExprTuple tuplexp3))
+
+(* let incr = function x -> x + 10          *)
+(*     in incr@([19; true; false; 7] fst 1) *)
+let expr_test_10 = Let ("incr", Fun ("x", OP("+", Ide "x", Val (Int 10))),
+                     TFunApply(Ide "incr", Fst(Val(Int 1), ExprTuple tuplexp3)))
+let res__test_10 = Tuple (Elem (Int 29))
 
 (* Espressione nella specifica del progetto *)
 let expr_specific = Let ("add5", Fun ("x", OP("+", Ide "x", Val (Int 5))),
                         Let ("t", ExprTuple ([Val (Int 5); Val (Int 6); Val (Bool true); Val (Int 7)]), 
                             TFunApply(Ide "add5", Fst (Val (Int 2), Ide "t"))))
+let res__specific = Tuple (TElem (Int 10, Elem (Int 11)))
 
+(* Funzione entry point *)
+let main () =
+    (* Esegui i test *)
+    run_test test1 res_test1 1 ;;
+    run_test test2 res_test2 2 ;;
+    run_test test3 res_test3 3 ;;
+    run_test test4 res_test4 4 ;;
+    run_test test5 res_test5 5 ;;
+    run_test test6 res_test6 6 ;;
+    run_test test7 res_test7 7 ;;
+    check test8 8 ;;
+    check test9 9 ;;
+    check test10 10 ;;
+    run_test test11 res_test11 11 ;;
+    run_test test12 res_test12 12 ;;
+    check test13 13 ;;
+    run_test test14 res_test14 14 ;;
+    run_test test15 res_test15 15 ;;
+
+(* Entry point *)
+main();;
