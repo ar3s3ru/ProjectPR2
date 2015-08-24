@@ -154,6 +154,7 @@ public class TestCase {
             System.out.println("[!] Aggiunta testUser fallito...");
             return;
         }
+
         // Logout operatore
         if (!platform.logOut()) {
             System.out.println("[!] Logout operatore fallito...");
@@ -213,6 +214,20 @@ public class TestCase {
         // Lettura andata a buon fine, esegue logout
         if (!platform.logOut()) {
             System.out.println("[!] Logout testUser fallito...");
+            return;
+        }
+
+        // Login operatore
+        if (!platform.logIn(nameOp, passOp)) {
+            System.out.println("[!] Login operatore fallito...");
+            return;
+        }
+
+        platform.printStat();
+
+        // Logout operatore
+        if (!platform.logOut()) {
+            System.out.println("[!] Logout operatore fallito...");
             return;
         }
     }

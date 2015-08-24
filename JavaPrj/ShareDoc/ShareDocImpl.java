@@ -72,6 +72,82 @@ public class ShareDocImpl implements ShareDoc {
     }
 
     // --------------------------------------------------------------------------- //
+    public void printStat () {
+    // --------------------------------------------------------------------------- //
+        // Nota per il professore: il codice di questo metodo è bruttino, ma molti
+        //                         codici di debug sono bruttini quindi...
+        if (this.isLogged && this.usrLogged.isOp()) {
+            System.out.println("[ Operator " + this.usrLogged.getNick() + " logged ]");
+            System.out.println("User list:");
+
+            for (User current : this.users) {
+                System.out.print("  -> " + current.getNick());
+
+                if (current.isOp()) {
+                    System.out.println(" [Operator]");
+                    continue;
+                } else {
+                    System.out.println();
+                }
+
+                System.out.print("    >> Docs: ");
+
+                if (current.docs.size() > 0) {
+                    boolean gotFirst = false;
+                    for (DigitalDoc doc : current.docs) {
+                        if (!gotFirst) {
+                            System.out.println(doc.getDoc());
+                            gotFirst = true;
+                        } else {
+                            System.out.println("             " + doc.getDoc());
+                        }
+                    }
+                } else {
+                    System.out.println("[Empty]");
+                }
+
+                System.out.print("    >> Shared client: ");
+
+                if (current.sharedWith.size() > 0) {
+                    boolean gotFirst = false;
+                    for (SharedDoc shwith : current.sharedWith) {
+                        if (!gotFirst) {
+                            System.out.print(shwith.getShrDoc().getDoc());
+                            System.out.println(" (author: " + shwith.getAuthor().getNick() + ")");
+                            gotFirst = true;
+                        } else {
+                            System.out.print("                      ");
+                            System.out.print(shwith.getShrDoc().getDoc());
+                            System.out.println(" (author: " + shwith.getAuthor().getNick() + ")");
+                        }
+                    }
+                } else {
+                    System.out.println("[Empty]");
+                }
+
+                System.out.print("    >> Shared server: ");
+
+                if (current.sharedTo.size() > 0) {
+                    boolean gotFirst = false;
+                    for (SharedDoc shto : current.sharedTo) {
+                        if (!gotFirst) {
+                            System.out.print(shto.getShrDoc().getDoc());
+                            System.out.println(" (with: " + shto.getUser().getNick() + ")");
+                            gotFirst = true;
+                        } else {
+                            System.out.print("                      ");
+                            System.out.print(shto.getShrDoc().getDoc());
+                            System.out.println(" (with: " + shto.getUser().getNick() + ")");
+                        }
+                    }
+                } else {
+                    System.out.println("[Empty]");
+                }
+            }
+        } else System.out.println("[!] Operator not logged, access denied.");
+    }
+
+    // --------------------------------------------------------------------------- //
     public boolean addUser(String name, int password) {
         // TODO: invariante di rappresentazione.
     // --------------------------------------------------------------------------- //
