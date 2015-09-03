@@ -14,6 +14,7 @@ public class ShareDocImpl implements ShareDoc {
     // Variabili d'istanza che denotano lista utenti e lista dei documenti presenti.
     private List<User>   users;
     private List<String> name_docs;
+    private List<String> name_usrs;
 
     // --------------------------------------------------------------------------- //
     public ShareDocImpl(String op_nick, int op_pass) 
@@ -29,127 +30,14 @@ public class ShareDocImpl implements ShareDoc {
 
         this.users     = new LinkedList<>();
         this.name_docs = new LinkedList<>();
+        this.name_usrs = new LinkedList<>();
 
         this.users.add(new Operator(op_nick, op_pass));
-    }
-
-    // --------------------------------------------------------------------------- //
-    public boolean logIn(String nick, int pass) {
-    // --------------------------------------------------------------------------- //
-        // Precondizioni verificate.
-        if (nick != null && !this.isLogged) {
-            // Itera sulla collezione di utenti.
-            for (User current : this.users) {
-                // Utente trovato.
-                if (current.getNick().equals(nick)) {
-                    // Credenziali valide, accedi.
-                    if (current.validPass(pass)) {
-                        this.usrLogged = current;
-                        this.isLogged  = true;
-                    }
-                    // Esci dal ciclo.
-                    break;
-                }
-            }
-        }
-        // Ritorna lo stato di login della piattaforma.
-        return this.isLogged;
-    }
-
-    // --------------------------------------------------------------------------- //
-    public boolean logOut() {
-    // --------------------------------------------------------------------------- //
-        // Se vi è un login attivo...
-        if (this.isLogged) {
-            // ...esci dal login.
-            this.usrLogged = null;
-            this.isLogged  = false;
-            // Logout effettuato.
-            return true;
-        }
-        // Il logout non è stato effettuato.
-        return false;
-    }
-
-    // --------------------------------------------------------------------------- //
-    public void printStat () {
-    // --------------------------------------------------------------------------- //
-        // Nota per il professore: il codice di questo metodo è bruttino, ma molti
-        //                         codici di debug sono bruttini quindi...
-        if (this.isLogged && this.usrLogged.isOp()) {
-            System.out.println("[ Operator " + this.usrLogged.getNick() + " logged ]");
-            System.out.println("User list:");
-
-            for (User current : this.users) {
-                System.out.print("  -> " + current.getNick());
-
-                if (current.isOp()) {
-                    System.out.println(" [Operator]");
-                    continue;
-                } else {
-                    System.out.println();
-                }
-
-                System.out.print("    >> Docs: ");
-
-                if (current.docs.size() > 0) {
-                    boolean gotFirst = false;
-                    for (DigitalDoc doc : current.docs) {
-                        if (!gotFirst) {
-                            System.out.println(doc.getDoc());
-                            gotFirst = true;
-                        } else {
-                            System.out.println("             " + doc.getDoc());
-                        }
-                    }
-                } else {
-                    System.out.println("[Empty]");
-                }
-
-                System.out.print("    >> Shared client: ");
-
-                if (current.sharedWith.size() > 0) {
-                    boolean gotFirst = false;
-                    for (SharedDoc shwith : current.sharedWith) {
-                        if (!gotFirst) {
-                            System.out.print(shwith.getShrDoc().getDoc());
-                            System.out.println(" (author: " + shwith.getAuthor().getNick() + ")");
-                            gotFirst = true;
-                        } else {
-                            System.out.print("                      ");
-                            System.out.print(shwith.getShrDoc().getDoc());
-                            System.out.println(" (author: " + shwith.getAuthor().getNick() + ")");
-                        }
-                    }
-                } else {
-                    System.out.println("[Empty]");
-                }
-
-                System.out.print("    >> Shared server: ");
-
-                if (current.sharedTo.size() > 0) {
-                    boolean gotFirst = false;
-                    for (SharedDoc shto : current.sharedTo) {
-                        if (!gotFirst) {
-                            System.out.print(shto.getShrDoc().getDoc());
-                            System.out.println(" (with: " + shto.getUser().getNick() + ")");
-                            gotFirst = true;
-                        } else {
-                            System.out.print("                      ");
-                            System.out.print(shto.getShrDoc().getDoc());
-                            System.out.println(" (with: " + shto.getUser().getNick() + ")");
-                        }
-                    }
-                } else {
-                    System.out.println("[Empty]");
-                }
-            }
-        } else System.out.println("[!] Operator not logged, access denied.");
+        this.name_usrs.add(op_nick);
     }
 
     // --------------------------------------------------------------------------- //
     public boolean addUser(String name, int password) {
-        // TODO: invariante di rappresentazione.
     // --------------------------------------------------------------------------- //
         // Se name è uguale a null, o non vi è un login attivo,
         // oppure il login attivo non è di un operatore, ritorna false.
@@ -158,9 +46,11 @@ public class ShareDocImpl implements ShareDoc {
 
         // Aggiunge un nuovo utente alla lista, ritorna
         // true in caso di successo, false altrimenti.
-        User    toAdd = new Client(name, password);
-        boolean isContained = false;
+        User toAdd = new Client(name, password);
         // Controlla che l'utente non sia già presente nella collezione.
+        boolean isContained = this.name_usrs.contains(name);
+
+        /*
         for (User current : this.users) {
             // L'utente è già presente, segnala...
             if (current.equals(toAdd)) {
@@ -169,19 +59,23 @@ public class ShareDocImpl implements ShareDoc {
                 break;
             }
         }
-        // Esegue la add() solo se l'utente non è presente.
-        return !isContained && this.users.add(toAdd);
+        */
+
+        // Esegue le add() solo se l'utente non è presente.
+        return !isContained && this.users.add(toAdd) && this.name_usrs.add(name);
     }
 
     // --------------------------------------------------------------------------- //
     public void removeUser(String name) {
     // --------------------------------------------------------------------------- //
-        // Esegue la procedura solo se name è un oggetto valido,
+        // Esegue la procedura solo se name è un nome registrato e valido,
         // e vi sia loggato un operatore.
-        if (name != null && this.isLogged && this.usrLogged.isOp()) {
+        if (name != null && this.isLogged && this.usrLogged.isOp() &&
+            this.name_usrs.contains(name)) {
             // Riferimento all'utente da eliminare.
             User    toDelete = null;
             boolean gotUser  = false;
+
             // Cerca l'utente nell'insieme degli utenti.
             for (User current : this.users) {
                 // Utente trovato.
@@ -208,15 +102,20 @@ public class ShareDocImpl implements ShareDoc {
                 for (SharedDoc current : toDelete.sharedTo) {
                     current.getUser().sharedWith.remove(current);
                 }
+                // Elimina documenti registrati dell'utente dalla lista dei
+                // documenti inseriti.
+                for (DigitalDoc current : toDelete.docs) {
+                    this.name_docs.remove(current.getDoc());
+                }
                 // Elimina il riferimento all'utente nell'insieme degli utenti.
                 this.users.remove(toDelete);
+                this.name_usrs.remove(name);
             }
         }
     }
 
     // --------------------------------------------------------------------------- //
     public boolean addDoc(String user, String doc, int password) {
-        // TODO: invariante di rappresentazione.
     // --------------------------------------------------------------------------- //
         // Se gli argomenti non sono validi, non avvengono modifiche
         // alla lista dei documenti.
@@ -232,9 +131,8 @@ public class ShareDocImpl implements ShareDoc {
 
         // Controlla che il nome del documento non sia stato già utilizzato
         // per altri documenti.
-        for (String docName : this.name_docs) {
-            if (docName.equals(doc))
-                return false;
+        if (this.name_docs.contains(doc)) {
+            return false;
         }
 
         // Aggiunge il documento alla lista dei documenti dell'utente.
@@ -242,13 +140,12 @@ public class ShareDocImpl implements ShareDoc {
         System.out.print("Insert text here: ");
         String textToGet = input.nextLine();
 
-        return this.name_docs.add(doc) &&
-            this.usrLogged.docs.add(new DigitalDoc(doc, user, textToGet));
+        return (this.name_docs.add(doc)) &&
+               (this.usrLogged.docs.add(new DigitalDoc(doc, user, textToGet)));
     }
 
     // --------------------------------------------------------------------------- //
     public boolean removeDoc(String user, String doc, int password) {
-        // TODO: invariante di rappresentazione.
     // --------------------------------------------------------------------------- //
         // Parametri attuali non validi, ritorna false.
         if (user == null   || doc == null ||
@@ -269,9 +166,10 @@ public class ShareDocImpl implements ShareDoc {
             }
         }
 
-        if (!isDocPresent)
+        if (!isDocPresent) {
             // Documento non trovato, ritorna false.
             return false;
+        }
 
         // Cerca nelle notifiche di condivisione la presenza
         // del documento.
@@ -289,14 +187,13 @@ public class ShareDocImpl implements ShareDoc {
 
         // Rimuovi il nome del documento dall'insieme dei nomi dei documenti
         // e dalla lista dei documenti dell'utente.
-        return this.name_docs.remove(doc) &&
-            this.usrLogged.docs.remove(toDelete);
+        return (this.name_docs.remove(doc)) &&
+               (this.usrLogged.docs.remove(toDelete));
     }
 
     // --------------------------------------------------------------------------- //
     public void readDoc(String user, String doc, int password)
         throws WrongIDException {
-        // TODO: invariante di rappresentazione
     // --------------------------------------------------------------------------- //
         // Esegue la procedura solo nel caso di parametri validi.
         if (user != null && doc != null && 
@@ -349,7 +246,6 @@ public class ShareDocImpl implements ShareDoc {
     // --------------------------------------------------------------------------- //
     public void shareDoc(String fromName, String toName, String doc, int password) 
         throws WrongIDException {
-        // TODO: invariante di rappresentazione.
     // --------------------------------------------------------------------------- //
         // Parametri attuali errati
         if (fromName != null && toName != null && doc != null &&
@@ -439,5 +335,186 @@ public class ShareDocImpl implements ShareDoc {
         toGet.getUser().sharedWith.remove(toGet);
         // Ritorna il titolo del documento condiviso eliminato.
         return toGet.getShrDoc().getDoc();
+    }
+
+    // EFFECTS: verifica che l'invariante di rappresentazione sia valida.
+    // RETURN:  true se la repInvariant è valida, false altrimenti.
+    // --------------------------------------------------------------------------- //
+    public boolean repOk() {
+    // --------------------------------------------------------------------------- //
+        if ((isLogged && usrLogged != null) || (!isLogged && usrLogged == null)) {
+            if (users.size() <= 0) {
+                return false;
+            }
+
+            int documentsScanned = 0;
+            int usersScanned     = 0;
+
+            for (User user : users) {
+                // Ogni utente dev'essere registrato in name_usrs.
+                if (name_usrs.contains(user.getNick())) {
+                    ++usersScanned;
+                } else {
+                    return false;
+                }
+
+                // Il nome di ogni documento digitale deve essere registrato anche
+                // in name_docs.
+                for (DigitalDoc doc : user.docs) {
+                    // Documento non registrato in name_docs.
+                    if (!name_docs.contains(doc.getDoc()))
+                        return false;
+                    // Incrementa contatore documenti analizzati.
+                    ++documentsScanned;
+                }
+
+                for (SharedDoc shwith : user.sharedWith) {
+                    // Ogni documento in condivisione cliente deve essere registrato.
+                    // Il cliente del documento condiviso dev'essere l'utente corrente.
+                    // L'autore del documento condiviso dev'essere registrato.
+                    if (!name_docs.contains(shwith.getShrDoc().getDoc()) ||
+                        !shwith.getUser().equals(user)                   ||
+                        !users.contains(shwith.getAuthor()))
+                        return false;
+                }
+
+                for (SharedDoc shto : user.sharedTo) {
+                    // Ogni documento in condivisione servente deve essere registrato.
+                    // L'autore del documento condiviso dev'essere l'utente corrente.
+                    // L'utente cliente del documento condiviso dev'essere registrato.
+                    if (!name_docs.contains(shto.getShrDoc().getDoc()) ||
+                        !shto.getAuthor().equals(user)                 ||
+                        !users.contains(shto.getUser()))
+                        return false;
+                }
+            }
+
+            // Controlla che il numero di utenti e documenti analizzati siano
+            // uguali rispettivamente al numero di utenti e documenti registrati.
+            return (documentsScanned == name_docs.size())
+                    && (usersScanned == name_usrs.size());
+        } else {
+            return false;
+        }
+    }
+
+    // EFFECTS: effettua il login dell'utente.
+    // RETURNS: true se lo stato del sistema è LOGIN, false altrimenti.
+    // --------------------------------------------------------------------------- //
+    public boolean logIn(String nick, int pass) {
+        // --------------------------------------------------------------------------- //
+        // Precondizioni verificate.
+        if (nick != null && !this.isLogged) {
+            // Itera sulla collezione di utenti.
+            for (User current : this.users) {
+                // Utente trovato.
+                if (current.getNick().equals(nick)) {
+                    // Credenziali valide, accedi.
+                    if (current.validPass(pass)) {
+                        this.usrLogged = current;
+                        this.isLogged  = true;
+                    }
+                    // Esci dal ciclo.
+                    break;
+                }
+            }
+        }
+        // Ritorna lo stato di login della piattaforma.
+        return this.isLogged;
+    }
+
+    // EFFECTS: effettua il logout del sistema.
+    // RETURNS: true se lo stato del sistema è LOGOUT, false altrimenti.
+    // --------------------------------------------------------------------------- //
+    public boolean logOut() {
+        // --------------------------------------------------------------------------- //
+        // Se vi è un login attivo...
+        if (this.isLogged) {
+            // ...esci dal login.
+            this.usrLogged = null;
+            this.isLogged  = false;
+            // Logout effettuato.
+            return true;
+        }
+        // Il logout non è stato effettuato.
+        return false;
+    }
+
+    // EFFECTS: stampa lo stato del sistema.
+    //          (Funzione di debug)
+    // --------------------------------------------------------------------------- //
+    public void printStat () {
+        // --------------------------------------------------------------------------- //
+        if (this.isLogged && this.usrLogged.isOp()) {
+            System.out.println("[ Operator " + this.usrLogged.getNick() + " logged ]");
+            System.out.println("User list:");
+
+            for (User current : this.users) {
+                System.out.print("  -> " + current.getNick());
+
+                if (current.isOp()) {
+                    System.out.println(" [Operator]");
+                    continue;
+                } else {
+                    System.out.println();
+                }
+
+                System.out.print("    >> Docs: ");
+
+                if (current.docs.size() > 0) {
+                    boolean gotFirst = false;
+                    for (DigitalDoc doc : current.docs) {
+                        if (!gotFirst) {
+                            System.out.println(doc.getDoc());
+                            gotFirst = true;
+                        } else {
+                            System.out.println("             " + doc.getDoc());
+                        }
+                    }
+                } else {
+                    System.out.println("[Empty]");
+                }
+
+                System.out.print("    >> Shared client: ");
+
+                if (current.sharedWith.size() > 0) {
+                    boolean gotFirst = false;
+                    for (SharedDoc shwith : current.sharedWith) {
+                        if (!gotFirst) {
+                            System.out.print(shwith.getShrDoc().getDoc());
+                            System.out.println(" (author: " + shwith.getAuthor().getNick() + ")");
+                            gotFirst = true;
+                        } else {
+                            System.out.print("                      ");
+                            System.out.print(shwith.getShrDoc().getDoc());
+                            System.out.println(" (author: " + shwith.getAuthor().getNick() + ")");
+                        }
+                    }
+                } else {
+                    System.out.println("[Empty]");
+                }
+
+                System.out.print("    >> Shared server: ");
+
+                if (current.sharedTo.size() > 0) {
+                    boolean gotFirst = false;
+                    for (SharedDoc shto : current.sharedTo) {
+                        if (!gotFirst) {
+                            System.out.print(shto.getShrDoc().getDoc());
+                            System.out.println(" (with: " + shto.getUser().getNick() + ")");
+                            gotFirst = true;
+                        } else {
+                            System.out.print("                      ");
+                            System.out.print(shto.getShrDoc().getDoc());
+                            System.out.println(" (with: " + shto.getUser().getNick() + ")");
+                        }
+                    }
+                } else {
+                    System.out.println("[Empty]");
+                }
+            }
+        } else {
+            System.out.println("[!] Operator not logged, access denied.");
+        }
     }
 }

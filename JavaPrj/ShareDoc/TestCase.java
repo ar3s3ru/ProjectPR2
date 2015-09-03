@@ -1,3 +1,8 @@
+/**
+ *  TestCase.java
+ *  Autore: Danilo Cianfrone, matricola 501292
+ *  Il codice, in ogni sua parte, è opera originale dell'autore.
+ */
 import java.util.Scanner;
 
 public class TestCase {
@@ -34,11 +39,13 @@ public class TestCase {
         System.out.println(platform.logOut());
 
         System.out.println("Prova addUser senza login: " + platform.addUser("Ciao", 121));
+        System.out.println("repOk result: " + platform.repOk());
+
         System.out.print("Prova addUser con login operatore: ");
 
         if (platform.logIn(nameOp, passOp)) {
             System.out.println(platform.addUser("Ciao", 121));
-
+            System.out.println("repOk result: " + platform.repOk());
             System.out.print("Prova removeUser client: ");
             platform.removeUser("Ciao");
             if (platform.logOut()) {
@@ -79,6 +86,9 @@ public class TestCase {
             System.out.println("Creazione utente fallita...");
             return;
         }
+
+        System.out.println("repOk result: " + platform.repOk());
+
         // Logout operatore
         if (!platform.logOut()) {
             System.out.println("[!] Logout operatore fallito...");
@@ -97,8 +107,12 @@ public class TestCase {
         if (!platform.addDoc(testUser, nameDoc, testPass)) {
             System.out.println("Aggiunta documento " + nameDoc + " fallita");
             return;
-        } else
+        } else {
             System.out.println("Documento aggiunto con successo");
+        }
+
+        System.out.println("repOk result:" + platform.repOk());
+
         // Prova la lettura del documento appena inserito
         try {
             platform.readDoc(testUser, nameDoc, testPass);
@@ -115,11 +129,16 @@ public class TestCase {
             System.out.println("Aggiunta documento " + nameDoc + " fallita");
             return;
         }
+
+        System.out.println("repOk result: " + platform.repOk());
+
         // Rimuove il documento
         if (!platform.removeDoc(testUser, "testDoc", testPass)) {
             System.out.println("Rimozione testDoc fallita...");
             return;
         }
+
+        System.out.println("repOk result:" + platform.repOk());
 
         boolean gotExcept = false;
         // Prova a leggere il documento appena rimosso
@@ -154,6 +173,8 @@ public class TestCase {
             System.out.println("[!] Aggiunta testUser fallito...");
             return;
         }
+
+        System.out.println("repOk result: " + platform.repOk());
 
         // Logout operatore
         if (!platform.logOut()) {
@@ -199,6 +220,9 @@ public class TestCase {
             System.out.println("Catturato " + e);
             return;
         }
+
+        System.out.println("repOk result: " + platform.repOk());
+
         // Logout utente iniziale e login testUser
         if (!platform.logOut() || !platform.logIn("testUser", 123)) {
             System.out.println("[!] Errore login testUser...");
@@ -223,7 +247,7 @@ public class TestCase {
             return;
         }
 
-        platform.printStat();
+        // platform.printStat();
 
         // Logout operatore
         if (!platform.logOut()) {
