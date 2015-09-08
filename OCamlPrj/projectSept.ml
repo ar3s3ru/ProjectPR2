@@ -33,8 +33,8 @@ and expr =
     (* Funzioni relative alle tuple **************************************************)
     | ExprTuple  of expr list
     | Equals     of expr * expr
-    | At         of expr * expr
-    | Fst        of expr * expr
+    | At         of prim * expr
+    | Fst        of prim * expr
     | TFunApply  of expr * expr
 
 (* Check di equalità tra tuple *)
@@ -163,18 +163,16 @@ let rec sem (exp : expr) (env : prim env) =
                                     | Tuple t1, Tuple t2 -> Bool (checkTuples t1 t2)
                                     | _                  -> failwith ("Operator defined only between tuples"))
     (* Accesso elemento tupla *)
-    | At (index, exp1)    -> let val_id = sem index env in
-                                 let val_exp = sem exp1 env in
-                                     (match (val_id, val_exp) with
-                                     | (Int i, Tuple t) -> if i < 0 then failwith ("Wrong index specified")
-                                                                    else getElem i t
-                                     | _                -> failwith ("Wrong syntax"))
+    | At (index, exp1)    -> let val_exp = sem exp1 env in
+                                 (match (index, val_exp) with
+                                 | (Int i, Tuple t) -> if i < 0 then failwith ("Wrong index specified")
+                                                                else getElem i t
+                                 | _                -> failwith ("Wrong syntax"))
     (* Selezione primi elems elementi *)
-    | Fst (elems, exp1)   -> let val_el = sem elems env in
-                                 let val_exp = sem exp1 env in
-                                     (match (val_el, val_exp) with
-                                     | (Int i, Tuple t) -> Tuple (selectFirst i t)
-                                     | _                -> failwith ("Wrong syntax"))
+    | Fst (elems, exp1)   -> let val_exp = sem exp1 env in
+                                 (match (elems, val_exp) with
+                                 | (Int i, Tuple t) -> Tuple (selectFirst i t)
+                                 | _                -> failwith ("Wrong syntax"))
     (* Applicazione di funzione agli elementi di una tupla *)
     | TFunApply (exp1, exp2) -> (match sem exp2 env with
                                 | Tuple t -> let val1 = sem exp1 env in
@@ -183,7 +181,7 @@ let rec sem (exp : expr) (env : prim env) =
                                                 | (Funval(Fun (x, exp), env1), Elem i)        ->  Elem (sem exp ((x, i)::env1))
                                                 | (Funval(Fun (x, exp), env1), TElem (i, t1)) -> TElem (sem exp ((x, i)::env1), applyFun func t1)
                                                 | _ -> failwith ("No function passed as first argument"))
-                                                    in Tuple (applyFun (sem exp1 env) t)
+                                                    in Tuple (applyFun val1 t)
                                 | _ -> failwith ("Wrong type"))
 
 (*******************************************************)
@@ -196,8 +194,9 @@ let rec sem (exp : expr) (env : prim env) =
 let run_test (test_exp: expr) (test_res: prim) (i: int) =
     let eval_test = sem test_exp [] in
         match test_res, eval_test with 
-        | (Int k, Int h)     -> if k == h then (Printf.printf "Test %d superato!\n" i) else (Printf.printf "Test %d fallito...\n" i)
-        | (Bool z, Bool v)   -> if z == v then (Printf.printf "Test %d superato!\n" i) else (Printf.printf "Test %d fallito...\n" i)
+        | (Int k, Int h)       -> if k == h then (Printf.printf "Test %d superato!\n" i) else (Printf.printf "Test %d fallito...\n" i)
+        | (Bool z, Bool v)     -> if z == v then (Printf.printf "Test %d superato!\n" i) else (Printf.printf "Test %d fallito...\n" i)
+        | (Tuple t1, Tuple t2) -> if (checkTuples t1 t2) then (Printf.printf "Test %d superato!\n" i) else (Printf.printf "Test %d fallito...\n" i)
         | (Unbound, Unbound) -> (Printf.printf "Test %i superato!\n" i)
         | _ -> (Printf.printf "Test %d fallito, pattern invalido.\n" i)
 
@@ -279,21 +278,21 @@ let tuplexp2 = [Val(Int 4); Val(Int 7); Val(Int (-10))]
 let tuplexp3 = [Val(Int 19); Val(Bool true); Val(Bool false); Val(Int 7)]
 
 (* Test funzione At *)
-let expr_test_1 = At(Val(Int 0), ExprTuple tuplexp1)
+let expr_test_1 = At(Int 0, ExprTuple tuplexp1)
 let res__test_1 = Int 1
 
-let expr_test_2 = At(Val(Int 1), ExprTuple tuplexp2)
+let expr_test_2 = At(Int 1, ExprTuple tuplexp2)
 let res__test_2 = Int 7
 
-let expr_test_3 = At(Val(Int 1000), ExprTuple tuplexp1) (* Eccezione in questo caso *)
+let expr_test_3 = At(Int 1000, ExprTuple tuplexp1) (* Eccezione in questo caso *)
 
 (* Test funzione Fst *)
-let expr_test_4 = Fst(Val(Int 3), ExprTuple tuplexp2)
+let expr_test_4 = Fst(Int 3, ExprTuple tuplexp2)
 let res__test_4 = Tuple (TElem (Int 4, TElem (Int 7, Elem (Int (-10)))))
 
-let expr_test_5 = Fst(Val(Int 10), ExprTuple tuplexp1)  (* Eccezione, numero di el troppo alto *)
+let expr_test_5 = Fst(Int 10, ExprTuple tuplexp1)  (* Eccezione, numero di el troppo alto *)
 
-let expr_test_6 = Fst(Val(Int 2), ExprTuple tuplexp2)
+let expr_test_6 = Fst(Int 2, ExprTuple tuplexp2)
 let res__test_6 = Tuple (TElem (Int 4, Elem (Int 7)))
 
 (* Test funzione Equals *)
@@ -320,18 +319,20 @@ let expr_test_9  = Let ("incr", Fun ("x", OP("+", Ide "x", Val (Int 10))),
 (* let incr = function x -> x + 10          *)
 (*     in incr@([19; true; false; 7] fst 1) *)
 let expr_test_10 = Let ("incr", Fun ("x", OP("+", Ide "x", Val (Int 10))),
-                     TFunApply(Ide "incr", Fst(Val(Int 1), ExprTuple tuplexp3)))
+                     TFunApply(Ide "incr", Fst(Int 1, ExprTuple tuplexp3)))
 let res__test_10 = Tuple (Elem (Int 29))
 
 (* Espressione nella specifica del progetto *)
 let expr_specific = Let ("add5", Fun ("x", OP("+", Ide "x", Val (Int 5))),
                         Let ("t", ExprTuple ([Val (Int 5); Val (Int 6); Val (Bool true); Val (Int 7)]), 
-                            TFunApply(Ide "add5", Fst (Val (Int 2), Ide "t"))))
+                            TFunApply(Ide "add5", Fst (Int 2, Ide "t"))))
 let res__specific = Tuple (TElem (Int 10, Elem (Int 11)))
 
 (* Funzione entry point *)
 let main () =
     (* Esegui i test *)
+    Printf.printf "Test terminato\n" ;;
+    Printf.printf "[!!] Sezione testing linguaggio funzionale\n" ;;
     run_test test1 res_test1 1 ;;
     run_test test2 res_test2 2 ;;
     run_test test3 res_test3 3 ;;
@@ -347,6 +348,19 @@ let main () =
     check test13 13 ;;
     run_test test14 res_test14 14 ;;
     run_test test15 res_test15 15 ;;
+    Printf.printf "[!!] Sezione testing sulle tuple\n" ;;
+    run_test expr_test_1 res__test_1 1 ;;
+    run_test expr_test_2 res__test_2 2 ;;
+    check expr_test_3 3 ;;
+    run_test expr_test_4 res__test_4 4 ;;
+    check expr_test_5 5 ;;
+    run_test expr_test_7 res__test_7 7 ;;
+    run_test expr_test_7_1 res__test_7_1 7 ;;
+    run_test expr_test_8 res__test_8 8 ;;
+    check expr_test_9 9 ;;
+    run_test expr_test_10 res__test_10 10 ;;
+    Printf.printf "Test espressione richiesta nella specifica:\n" ;;
+    run_test expr_specific res__specific 11 ;;
 
 (* Entry point *)
 main();;

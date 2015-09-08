@@ -247,7 +247,48 @@ public class TestCase {
             return;
         }
 
-        // platform.printStat();
+        platform.printStat();
+
+        // Logout operatore
+        if (!platform.logOut()) {
+            System.out.println("[!] Logout operatore fallito...");
+            return;
+        }
+
+        // Prova getNext()
+        // Login utente
+        if (!platform.logIn(testUser, testPass)) {
+            System.out.println("[!] Errore login " + testUser + "...");
+            return;
+        }
+
+        String got = null;
+
+        try {
+            got = platform.getNext(testUser, testPass);
+        } catch (EmptyQueueException e) {
+            System.out.println("Catturato " + e);
+            return;
+        } catch (WrongIDException e) {
+            System.out.println("Catturato " + e);
+            return;
+        }
+
+        System.out.println("Test getNext() superato: " + got + " documento condiviso restituito.");
+        System.out.println("repOk result " + platform.repOk());
+
+        if (!platform.logOut()) {
+            System.out.println("[!!] Logout " + testUser + " fallito...");
+            return;
+        }
+
+        // Login operatore
+        if (!platform.logIn(nameOp, passOp)) {
+            System.out.println("[!] Login operatore fallito...");
+            return;
+        }
+
+        platform.printStat();
 
         // Logout operatore
         if (!platform.logOut()) {
